@@ -36,20 +36,20 @@ def get_seal():
 
 @router.post("/日切/封口")
 def seal(body: SealBody | None = None):
-    with db() as conn:
+    with db(write=True) as conn:
         force = body.强制 if body else False
         return dayseal.seal_day(conn, force=force)
 
 
 @router.post("/日切/解封")
 def unseal():
-    with db() as conn:
+    with db(write=True) as conn:
         return dayseal.unseal_day(conn)
 
 
 @router.post("/日切/切日")
 def roll(body: RollBody | None = None):
-    with db() as conn:
+    with db(write=True) as conn:
         target = body.营业日 if body else None
         return dayseal.roll_day(conn, target)
 
@@ -62,5 +62,5 @@ def settings():
 
 @router.post("/设置/营业日")
 def set_day(body: DayBody):
-    with db() as conn:
+    with db(write=True) as conn:
         return dayseal.roll_day(conn, body.营业日)

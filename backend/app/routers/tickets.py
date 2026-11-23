@@ -47,38 +47,44 @@ def events():
         return tic.list_events(conn)
 
 
+@router.get("/号牌/{ticket_id}/回放")
+def replay(ticket_id: int):
+    with db() as conn:
+        return tic.replay_ticket(conn, ticket_id)
+
+
 @router.post("/取号")
 def take(body: TakeBody):
-    with db() as conn:
+    with db(write=True) as conn:
         return tic.take_ticket(conn, body.种类编号)
 
 
 @router.post("/叫号")
 def call_next(body: CallBody):
-    with db() as conn:
+    with db(write=True) as conn:
         return tic.call_next(conn, body.窗口编号, body.种类编号)
 
 
 @router.post("/号牌/{ticket_id}/过号")
 def skip(ticket_id: int):
-    with db() as conn:
+    with db(write=True) as conn:
         return tic.mark_skip(conn, ticket_id)
 
 
 @router.post("/号牌/{ticket_id}/重叫")
 def recall(ticket_id: int, body: RecallBody | None = None):
-    with db() as conn:
+    with db(write=True) as conn:
         wid = body.窗口编号 if body else None
         return tic.recall(conn, ticket_id, wid)
 
 
 @router.post("/号牌/{ticket_id}/办结")
 def finish(ticket_id: int):
-    with db() as conn:
+    with db(write=True) as conn:
         return tic.finish(conn, ticket_id)
 
 
 @router.post("/号牌/{ticket_id}/作废")
 def void(ticket_id: int):
-    with db() as conn:
+    with db(write=True) as conn:
         return tic.void_ticket(conn, ticket_id)

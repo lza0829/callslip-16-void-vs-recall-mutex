@@ -65,6 +65,25 @@ def require_status(status: str) -> str:
     return status
 
 
+def log_event(conn, ticket_id: int, window_id: int | None, action: str, ts: str,
+              from_status: str, to_status: str, note: str = "") -> dict:
+    """动账即写事件：事件的前态/后态必须与号牌同一次状态迁移一致，供回放核链。"""
+    cur = conn.execute(
+        """INSERT INTO call_events(ticket_id, window_id, action, from_status, to_status, created_at, note)
+           VALUES (?,?,?,?,?,?,?)""",
+        (ticket_id, window_id, action, from_status, to_status, ts, note),
+    )
+    return {
+        "id": cur.lastrowid,
+        "动作": action,
+        "前态": from_status,
+        "后态": to_status,
+        "窗口编号": window_id,
+        "时刻": ts,
+        "备注": note,
+    }
+
+
 def ticket_dict(conn, row) -> dict:
     kind = conn.execute(
         "SELECT name, prefix FROM business_kinds WHERE id=?", (row["kind_id"],)

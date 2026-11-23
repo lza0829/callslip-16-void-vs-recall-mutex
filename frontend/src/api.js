@@ -29,6 +29,7 @@ export const api = {
   recall: (id, 窗口编号) => req(`/号牌/${id}/重叫`, { method: 'POST', body: JSON.stringify({ 窗口编号 }) }),
   finish: (id) => req(`/号牌/${id}/办结`, { method: 'POST', body: '{}' }),
   voidTicket: (id) => req(`/号牌/${id}/作废`, { method: 'POST', body: '{}' }),
+  replay: (id) => req(`/号牌/${id}/回放`),
   sealInfo: () => req('/日切'),
   seal: (强制 = false) => req('/日切/封口', { method: 'POST', body: JSON.stringify({ 强制 }) }),
   unseal: () => req('/日切/解封', { method: 'POST', body: '{}' }),

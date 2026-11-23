@@ -5,7 +5,7 @@ from app.db import db, init_db
 
 def seed_if_empty() -> None:
     init_db()
-    with db() as conn:
+    with db(write=True) as conn:
         n = conn.execute("SELECT COUNT(*) AS c FROM business_kinds").fetchone()["c"]
         if n:
             return
@@ -40,7 +40,7 @@ def seed_if_empty() -> None:
             (kind_ids[0], "储003", 3, "办理中", 1),
         ]
         for kid, slip, pos, status, wid in samples:
-            conn.execute(
+            cur = conn.execute(
                 """INSERT INTO tickets(slip_no, kind_id, business_day, status, window_id, queue_pos, taken_at, called_at, note)
                    VALUES (?,?,?,?,?,?,?,?,?)""",
                 (
@@ -56,8 +56,14 @@ def seed_if_empty() -> None:
                 ),
             )
             if status == "办理中":
-                tid = conn.execute("SELECT id FROM tickets WHERE slip_no=?", (slip,)).fetchone()["id"]
+                tid = cur.lastrowid
                 conn.execute("UPDATE windows SET current_ticket_id=? WHERE id=1", (tid,))
+                # 种子号也留可回放事件，事件链与终态闭合
+                conn.execute(
+                    """INSERT INTO call_events(ticket_id, window_id, action, from_status, to_status, created_at, note)
+                       VALUES (?,?,?,?,?,?,?)""",
+                    (tid, wid, "叫号", "等候", "办理中", f"{today}T09:20:00", "种子号"),
+                )
         for kid, prefix in ((kind_ids[0], "储"), (kind_ids[1], "对"), (kind_ids[2], "理")):
             mx = conn.execute(
                 "SELECT COUNT(*) AS c FROM tickets WHERE kind_id=? AND business_day=?",

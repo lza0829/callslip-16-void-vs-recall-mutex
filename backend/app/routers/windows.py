@@ -22,5 +22,5 @@ def list_windows():
 
 @router.post("/窗口/{window_id}/开闭")
 def set_open(window_id: int, body: OpenBody):
-    with db() as conn:
+    with db(write=True) as conn:
         return win_svc.set_open(conn, window_id, body.开放)

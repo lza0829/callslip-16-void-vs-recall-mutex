@@ -22,7 +22,7 @@ def list_kinds():
 
 @router.post("/业务种类/{kind_id}/启停")
 def set_active(kind_id: int, body: ActiveBody):
-    with db() as conn:
+    with db(write=True) as conn:
         win_svc.set_kind_active(conn, kind_id, body.启用)
         kinds = win_svc.list_kinds(conn)
         return next(k for k in kinds if k["id"] == kind_id)
